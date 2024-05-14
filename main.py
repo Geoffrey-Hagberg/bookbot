@@ -1,68 +1,75 @@
+# read_file(filepath) opens the passed file, reads contents to a variable,
+# and splits those contents into a word list that can be parsed downstream;
+# returns text (string), word_list (list of strings)
 def read_file(filepath):
-    # open the file and set a variable as the string returned by reading the file
     with open(filepath) as f:
         text = f.read()
-    return text
+        word_list = text.split()
+    return word_list
 
-def count_words(text):
-    # split into list of words
-    word_list = text.split()
-    # check the length of the list
-    word_count = len(word_list)
-    return word_count
+# get_distinct_words creates a dictionary with key: each string from a passed
+# list of strings, and value: the count associated with each of those words
+# TODO: this needs to strip punctuation somehow
+def get_distinct_words(word_list):
+    distinct_words = {}
+    for word in word_list:
+        lowered_word = word.lower()
+        if lowered_word in distinct_words:
+            distinct_words[lowered_word] += 1
+        else:
+            distinct_words[lowered_word] = 1
+    return distinct_words
 
+# count_totals(word_list, distinct_words) takes a passed list of strings and a passed
+# dictionary of distinct words and counts the totals of each; returns total_word_count
+# (integer) and total_distinct_words (integer)
+def count_totals(word_list, distinct_words):
+    total_word_count = len(word_list)
+    total_distinct_words = 0
+    for word in distinct_words:
+        total_distinct_words += 1
+    return total_word_count, total_distinct_words
+
+# sort_on(dict) defines a sorting method associated with a passed dictionary,
+# requires that the passed dictionary include a key labeled "num" on which to sort;
+# returns the value associated with "num" key
 def sort_on(dict):
     return dict["num"]
 
-def count_letters(text):
-    # prep an empty dictionary for the letter counts and lower the letter cases
-    letter_counts = {}
-    lowered_text = text.lower()
-    # iterate over every letter
-    for letter in lowered_text:
-        # check if the letter's already in the dictionary, if so increment count by 1
-        if letter in letter_counts:
-            letter_counts[letter] += 1
-        # if it's not, add the letter to the dictionary as key, with count initially at 1
-        else:
-            letter_counts[letter] = 1
-    return letter_counts
+# get_sorted_distinct_words(distinct words) takes a dictionary of words and counts per
+# word and converts that into a list where each item is a dictionary with keys
+# "name" associated with each word from the original dictionary and "num"
+# associated with the respective count; then sorts that list of dictionaries using
+# the sort_on method defined above and returns the sorted list
+def get_sorted_distinct_words(distinct_words):
+    sorted_distinct_words = []
+    for word in distinct_words:
+        word_dict = {}
+        word_dict["name"] = word
+        word_dict["num"] = distinct_words[word]
+        sorted_distinct_words.append(word_dict)
+    sorted_distinct_words.sort(reverse=True, key=sort_on)
+    return sorted_distinct_words
 
-def print_letter_counts(letter_counts):
-    # create an empty list to contain the split dictionaries
-    letters_list = []
-    # iterate over each key in the letter counts dictionary
-    for letter in letter_counts:
-        # check if it's an alphabetical character, if so create a new dictionary
-        if letter.isalpha() == True:
-    # key "name" is letter counts' key and "num" is letter counts' value
-            character_dict = {}
-            character_dict["name"] = letter
-            character_dict["num"] = letter_counts[letter]
-            # append dictionary to list
-            letters_list.append(character_dict)
-    # sort the list using sort_on key defined above
-    letters_list.sort(reverse=True, key=sort_on)
-    # iterate over each dictionary in list and print out the relevant values
-    for character in letters_list:
-        letter = character["name"]
-        count = character["num"]
-        print(f"The '{letter}' character was found {count} times")
-
+# main() starts by defining what file to evaluate, calls a sequence of functions
+# to read, parse, and count words within that file, takes the outputs of those
+# functions and prints them to the terminal in a formatted report
+# TODO: make the filepath user entry in the terminal instead of hardcoded
+# TODO: output to a text file report instead of to terminal
 def main():
-    # do I need a function to somehow set the filepath dynamically or is it ok to hardcode it?
     filepath = "books/frankenstein.txt"
-    # call function to get the file contents
-    text = read_file(filepath)
-    # call functions to count stuff
-    word_count = count_words(text)
-    letter_counts = count_letters(text)
+    word_list = read_file(filepath)
+    distinct_words = get_distinct_words(word_list)
+    sorted_distinct_words = get_sorted_distinct_words(distinct_words)
+    total_word_count, total_distinct_words = count_totals(word_list, distinct_words)
     # print the counted stuff
-    print(f"- - Report of {filepath} - -")
+    print(f"- - Report of Words in {filepath} - -")
     print()
-    print(f"{word_count} words found in the document")
+    print(f"The text is {total_word_count} words long.")
+    print(f"The text uses {total_distinct_words} distinct words.")
     print()
-    print_letter_counts(letter_counts)
+    for word in sorted_distinct_words:
+        print(f"The word '{word['name']}' occurs {word['num']} times.")
     print()
     print("- - End of report - -")
 
